@@ -1,0 +1,45 @@
+{
+  "patch": {
+    "states": [
+      { "id": "s_credit_error", "label": "Credit Check Error", "initial": false, "terminal": "none", "awaitsExternal": false, "userInput": false, "evidence": "Added from decision", "confidence": 0.9 }
+    ],
+    "events": [
+      { "id": "e_credit_timeout", "label": "Credit Check Timed Out", "kind": "timeout", "evidence": "Added from decision", "confidence": 0.9 },
+      { "id": "e_retry", "label": "Retry", "kind": "user_action", "evidence": "Added from decision", "confidence": 0.9 },
+      { "id": "e_back_to_cart", "label": "Back to Cart", "kind": "user_action", "evidence": "Added from decision", "confidence": 0.9 }
+    ],
+    "transitions": [
+      { "id": "t_credit_timeout", "from": "s_credit_check", "event": "e_credit_timeout", "to": "s_credit_error", "evidence": "Added from decision", "confidence": 0.9 },
+      { "id": "t_error_retry", "from": "s_credit_error", "event": "e_retry", "to": "s_credit_check", "evidence": "Added from decision", "confidence": 0.9 },
+      { "id": "t_error_cancel", "from": "s_credit_error", "event": "e_cancel", "to": "s_cart", "evidence": "Added from decision", "confidence": 0.9 },
+      { "id": "t_declined_back", "from": "s_credit_declined", "event": "e_back_to_cart", "to": "s_cart", "evidence": "Added from decision", "confidence": 0.9 }
+    ]
+  },
+  "rules": [
+    { "text": "If the credit check gets no answer in time, show a credit check error and let the user retry or go back to the cart.", "findingIds": ["f_missing_handler_s_credit_check_timeout"] },
+    { "text": "After a credit decline the user can return to the cart.", "findingIds": ["f_dead_end_state_s_credit_declined"] }
+  ],
+  "scenarios": [
+    {
+      "title": "Credit check times out and the user retries",
+      "priority": "high",
+      "steps": [
+        { "keyword": "Given", "text": "the user submitted their details and the credit check is running" },
+        { "keyword": "When", "text": "the credit check gets no answer in time" },
+        { "keyword": "Then", "text": "the user sees a credit check error with a Retry option" }
+      ],
+      "findingIds": ["f_missing_handler_s_credit_check_timeout"]
+    },
+    {
+      "title": "Declined user returns to the cart",
+      "priority": "medium",
+      "steps": [
+        { "keyword": "Given", "text": "the user sees Credit Declined" },
+        { "keyword": "When", "text": "the user chooses Back to Cart" },
+        { "keyword": "Then", "text": "the user is back in the cart" }
+      ],
+      "findingIds": ["f_dead_end_state_s_credit_declined"]
+    }
+  ],
+  "assumptions": ["Retry has no maximum count yet."]
+}

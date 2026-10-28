@@ -1,11 +1,11 @@
 # Progress
 
-Current milestone: **M1 — Core logic** (next)
+Current milestone: **M2 — Spike** (next)
 
 | Milestone | Status |
 |---|---|
 | M0 Scaffold | Done |
-| M1 Core logic | Not started |
+| M1 Core logic | Done |
 | M2 Spike | Not started |
 | M3 Server pipeline | Not started |
 | M4 UI | Not started |
@@ -37,3 +37,23 @@ Notes:
 - The project lives in a OneDrive folder. Turbopack warns about frequent file updates while OneDrive syncs `node_modules`.
 
 Next: M1 — core logic and core tests (SPEC §5, §6, §11, Appendices A to E). Starts with a plan.
+
+### 2026-10-29 — M1 Core logic (done)
+
+Done:
+- Fixtures `bnpl.machine.json`, `bnpl.ai-gaps.json`, `bnpl.finalization.json` extracted verbatim from SPEC Appendices A, C, D.
+- `src/core`: `types`, `validate`, `checker`, `questions`, `matrix`, `merge`, `patch`, `scenarios`, `mermaid`, `project`, `export/spec`, `export/gherkin`, `export/playwright`.
+- 66 tests in 10 files under `tests/core` (all §14.1 core cases, plus matrix and merge). Export outputs were checked by hand against §11, then committed as inline snapshots.
+- ESLint rule keeps `src/core` free of Next, React, Node built-ins and other layers.
+- `.gitattributes` (LF), `vitest.config.mts`.
+
+"Done when" check:
+- The fixture yields exactly the 9 Appendix E.2 findings (ids, order, severities, state ids, kinds) and E.1 titles.
+- After the Appendix D patch exactly the 7 E.3 findings remain. The matrix matches E.4.
+- `typecheck`, `lint`, `test` pass.
+
+Owner-approved contract additions: `ExportData.findings`, `f_nondeterministic_<stateId>_<eventId>`, `MatrixRow` shape (see DECISIONS.md).
+
+Failed and fixed: Vite warned that `vitest.config.ts` was loaded as CommonJS → renamed to `.mts`.
+
+Next: M2 — spike. Needs `GEMINI_API_KEY` in `.env.local` and, for V2, an owner-supplied `fixtures/spike-sketch.jpg`. Without a key, SPIKE.md records every item as `NOT TESTED – key missing` and work continues in mock mode.

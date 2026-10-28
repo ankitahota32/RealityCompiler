@@ -1,0 +1,29 @@
+[
+  {
+    "title": "Credit approval arrives after user left",
+    "description": "If the bank approves after the user closed the app, a plan may be created that the user never confirmed.",
+    "severity": "high",
+    "category": "external_timing",
+    "stateIds": ["s_credit_check"],
+    "question": "If credit is approved after the user has left, what should happen?",
+    "options": ["Do nothing and expire the approval", "Notify the user to confirm later", "Auto-confirm the plan"]
+  },
+  {
+    "title": "Order total changes before confirmation",
+    "description": "A coupon expiring or a price change between review and confirmation can make the plan amount differ from what the user saw.",
+    "severity": "medium",
+    "category": "money_risk",
+    "stateIds": ["s_confirm"],
+    "question": "If the total changes before the user confirms, what should happen?",
+    "options": ["Show the new total and ask again", "Block confirmation with an error", "Keep the old total"]
+  },
+  {
+    "title": "Repeated credit checks by the same user",
+    "description": "Someone can retry credit checks many times, causing cost and possible abuse of the bank service.",
+    "severity": "low",
+    "category": "security_abuse",
+    "stateIds": ["s_checkout"],
+    "question": "Should the number of credit checks per user be limited?",
+    "options": ["Yes, limit per day", "Yes, limit per hour", "No limit"]
+  }
+]

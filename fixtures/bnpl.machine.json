@@ -1,0 +1,29 @@
+{
+  "name": "Buy Now Pay Later checkout",
+  "flowType": "payments",
+  "states": [
+    { "id": "s_cart", "label": "Cart", "initial": true, "terminal": "none", "awaitsExternal": false, "userInput": false, "evidence": "Sketch box labeled Cart", "confidence": 0.95 },
+    { "id": "s_checkout", "label": "Checkout Review", "initial": false, "terminal": "none", "awaitsExternal": false, "userInput": true, "evidence": "Box labeled Checkout Review with a form", "confidence": 0.9 },
+    { "id": "s_credit_check", "label": "Credit Check", "initial": false, "terminal": "none", "awaitsExternal": true, "userInput": false, "evidence": "Box labeled Credit Check, calls bank", "confidence": 0.85 },
+    { "id": "s_confirm", "label": "Confirm Plan", "initial": false, "terminal": "none", "awaitsExternal": false, "userInput": true, "evidence": "Box labeled Confirm Plan with a button", "confidence": 0.9 },
+    { "id": "s_order_placed", "label": "Order Placed", "initial": false, "terminal": "success", "awaitsExternal": false, "userInput": false, "evidence": "Final box Order Placed", "confidence": 0.95 },
+    { "id": "s_credit_declined", "label": "Credit Declined", "initial": false, "terminal": "none", "awaitsExternal": false, "userInput": false, "evidence": "Box labeled Insufficient Credit", "confidence": 0.8 },
+    { "id": "s_referral", "label": "Referral Bonus Screen", "initial": false, "terminal": "none", "awaitsExternal": false, "userInput": false, "evidence": "Loose box in the corner, no arrows", "confidence": 0.5 }
+  ],
+  "events": [
+    { "id": "e_proceed", "label": "Tap Proceed", "kind": "user_action", "evidence": "Arrow label Proceed", "confidence": 0.9 },
+    { "id": "e_submit", "label": "Submit Details", "kind": "user_action", "evidence": "Arrow label Submit", "confidence": 0.9 },
+    { "id": "e_credit_ok", "label": "Credit Approved", "kind": "system", "evidence": "Arrow label Approved", "confidence": 0.85 },
+    { "id": "e_credit_low", "label": "Insufficient Credit", "kind": "system", "evidence": "Arrow label Insufficient Credit", "confidence": 0.85 },
+    { "id": "e_confirm", "label": "Confirm Plan", "kind": "user_action", "evidence": "Arrow label Confirm", "confidence": 0.9 },
+    { "id": "e_cancel", "label": "Cancel", "kind": "cancel", "evidence": "Arrow label Cancel back to cart", "confidence": 0.8 }
+  ],
+  "transitions": [
+    { "id": "t_proceed", "from": "s_cart", "event": "e_proceed", "to": "s_checkout", "evidence": "Arrow Cart to Checkout Review", "confidence": 0.9 },
+    { "id": "t_submit", "from": "s_checkout", "event": "e_submit", "to": "s_credit_check", "evidence": "Arrow Checkout Review to Credit Check", "confidence": 0.9 },
+    { "id": "t_credit_ok", "from": "s_credit_check", "event": "e_credit_ok", "to": "s_confirm", "evidence": "Arrow Credit Check to Confirm Plan", "confidence": 0.85 },
+    { "id": "t_credit_low", "from": "s_credit_check", "event": "e_credit_low", "to": "s_credit_declined", "evidence": "Arrow Credit Check to Credit Declined", "confidence": 0.85 },
+    { "id": "t_confirm", "from": "s_confirm", "event": "e_confirm", "to": "s_order_placed", "evidence": "Arrow Confirm Plan to Order Placed", "confidence": 0.9 },
+    { "id": "t_cancel", "from": "s_confirm", "event": "e_cancel", "to": "s_cart", "evidence": "Arrow Confirm Plan back to Cart", "confidence": 0.8 }
+  ]
+}
