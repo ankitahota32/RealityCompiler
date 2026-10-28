@@ -1,13 +1,13 @@
 # Progress
 
-Current milestone: **M3 — Server pipeline** (next)
+Current milestone: **M4 — UI** (next)
 
 | Milestone | Status |
 |---|---|
 | M0 Scaffold | Done |
 | M1 Core logic | Done |
 | M2 Spike | Done |
-| M3 Server pipeline | Not started |
+| M3 Server pipeline | Done |
 | M4 UI | Not started |
 | M5 Exports and polish | Not started |
 | M6 Eval and docs | Not started |
@@ -77,3 +77,20 @@ Failed and fixed:
 Measured tokens (fixture, realistic input): extract about 2.0K, analyze about 6.0K (8000 cap), finalize about 2.4K. Time: extract 37 s (31b) or 21 s (26b), analyze 85 to 98 s, finalize 15 to 31 s.
 
 Next: M3 — server pipeline (env, http, budget, Gemma client real and mock, packs, the three steps, API routes). Starts with a plan.
+
+### 2026-10-29 — M3 Server pipeline (done)
+
+Done:
+- `src/server`: `env`, `http` (error shape, IP limiter, image signatures), `gemma/budget`, `gemma/client` (real, takes the SDK object), `gemma/mock`, `steps/extract`, `steps/analyze` (with `proposalsToFindings`), `steps/finalize`.
+- `src/packs`: five checklists extracted from SPEC §8 word for word, `getPack()`.
+- Routes `/api/extract`, `/api/analyze`, `/api/finalize`, `/api/demo`, `/api/health` (`runtime = 'nodejs'`, `maxDuration = 60`).
+- 65 server tests in 5 files (steps with the mock, real client against a fake SDK, budget with fake timers, http, every route called directly). Total 131 tests.
+
+"Done when" check:
+- Server tests pass with the mock; `typecheck`, `lint`, `test`, `build` pass.
+- Real API: `POST /api/extract` with the Appendix F text → HTTP 200 in 80 s, machine passes `validateMachine` (6 states incl. success and failure ends, 7 checker findings), 2,002 tokens. Server log: one usage line, no user text, no key.
+- Build output scanned: no key string, no `NEXT_PUBLIC_GEMINI`.
+
+Failed and fixed: one client test passed `undefined` to a defaulted parameter, so the "no usage" case never ran; fixed the test helper.
+
+Next: M4 — UI (all of SPEC §10 including project file controls). Starts with a plan; design.md applies.
