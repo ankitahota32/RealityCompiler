@@ -33,6 +33,16 @@ Choices made where SPEC.md is silent, plus dependency and version records (SPEC 
 | 2026-10-29 | M1: test helpers and config. | `tests/core/fixtures.ts` (fixture loaders, a compact machine builder, the end-of-flow export data). `vitest.config.ts` renamed to `vitest.config.mts` (Vite warned it was loading ESM as CommonJS). `.gitattributes` sets LF line endings for exact-text tests. | Not test files, so outside the §4 `*.test.ts` names. |
 | 2026-10-29 | M1: enforcing "src/core is pure". | ESLint `no-restricted-imports` on `src/core/**` blocks Next, React, Node built-ins and the other layers. | Turns a CLAUDE.md rule into a lint error. |
 | 2026-10-29 | M1: converting AI gap proposals into findings (§7.2 step 2 post-processing). | Deferred to M3 with the analyze step and `/api/demo`. | Not in the M1 module list. |
+| 2026-10-29 | M2: the analyze step as written in SPEC §7.2 (thinking HIGH, `maxOutputTokens` 4000) never returns gaps. Spike V10: thoughts used 3,997 of 4,000 output tokens → `MAX_TOKENS`, no function call. Gemma 4 rejects MEDIUM and LOW (`400 Thinking level is not supported`), so only HIGH and MINIMAL exist. | Analyze uses `maxOutputTokens` **8000**, thinking HIGH. Spike: 4 gaps, all usable, 5,977 tokens, about 98 s. The §12.1 estimate uses 8000, so one analyze reserves about 9.2K of the 14K budget. | Thoughts count against `maxOutputTokens`; 8000 is the smallest tested value that works. Flagged to the owner. |
+| 2026-10-29 | M2: use `toolConfig` mode `ANY` (forced function call)? V5: the API accepts it. | Do **not** use it in any step; rely on the prompts plus the §7.5 fallback. | V10: forced analyze skipped thinking and returned 0 gaps. Forced finalize left 13 findings vs 9 unforced, and failed zod in an earlier run. SPEC §7.1 step 4 allows it only "if the spike proved it works"; it works, but makes results worse. |
+| 2026-10-29 | M2: function declaration field. | Pass the SPEC §7.3 objects as `parameters` (V3 PASS: valid machine on the first try). `parametersJsonSchema` is not needed. | Spike V3. |
+| 2026-10-29 | M2: image input. | Keep the Files API path of §7.1 (V2, V9 PASS) and delete uploads in `finally` (V8 PASS). Inline base64 also works and is the fallback. Default media resolution: config-level LOW cut the sketch from 276 to 84 prompt tokens and still read it, but handwriting quality is the point, so no change until the M6 eval. | Spike V2, V7 to V9. Per-part resolution showed no saving. |
+| 2026-10-29 | M2: usage fields. | Read `promptTokenCount`, `candidatesTokenCount`, `totalTokenCount`. `totalTokenCount` includes `thoughtsTokenCount`. `candidatesTokenCount` is missing when the model stops at `MAX_TOKENS`, so a missing field counts as 0. | Spike V6, V10. |
+| 2026-10-29 | M2: the free tier often answers 500 Internal error or 503 "high demand", mostly on `gemma-4-31b-it`. | The M3 client keeps the SPEC §7.1 retries (2 s, 5 s). The spike treats checks that only got server errors as NOT TESTED, never FAIL. | Two spike runs: several 5xx per run; every check passed on retry. |
+| 2026-10-29 | M2: model choice (SPEC §15: the spike and eval decide). `gemma-4-31b-it` took 13 to 75 s even for trivial prompts and failed most often. `gemma-4-26b-a4b-it` read the sketch correctly in 2 s and extracted a valid machine in 21 s (31b: 37 to 42 s). | Keep the SPEC defaults for now. The M6 eval compares the two on extraction; if 26b matches, switch `GEMMA_MODEL_EXTRACT`. | One sketch is too little evidence to change the default. |
+| 2026-10-29 | M2: analyze can take about 85 to 98 s, longer than the `maxDuration = 60` of SPEC §9. | No change for local use (`maxDuration` only applies on Vercel). Noted as a known limitation for deployment. | Local first (SPEC §12.4). |
+| 2026-10-29 | M2: files created before M3. | `src/server/gemma/declarations.ts` (§7.3) and `prompts.ts` (§7.2) were generated word for word from SPEC.md by script, so the spike tests the real ones and M3 reuses them. The spike inlines the §8 payments checklist; M3 creates `src/packs`. | No duplicated prompt text. |
+| 2026-10-29 | M2: spike environment and sketch. | The spike loads `.env.local` with Node's built-in `process.loadEnvFile` (no dotenv). `fixtures/spike-sketch.jpg` (the owner's sketch) is git-ignored. | No new dependency; keeps personal photos out of the repo. |
 
 ## Installed versions
 
@@ -64,4 +74,5 @@ Runtime: Node 22.13.0, npm 11.4.2.
 
 ## Ideas for later
 
-None yet.
+- Upload images to the Files API from a `Blob` instead of a temp file (spike: the SDK accepts it). SPEC §7.1 step 2 asks for a temp file, so not done.
+- Try config-level `mediaResolution: LOW` for typed screenshots (276 → 84 prompt tokens on the sketch, still read correctly).

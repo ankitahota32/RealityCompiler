@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# owner-supplied spike image (SPEC §17 V2); not committed
+fixtures/spike-sketch.jpg
