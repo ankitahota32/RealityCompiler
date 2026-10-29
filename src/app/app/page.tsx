@@ -13,6 +13,7 @@ import { InputPanel } from '@/components/InputPanel';
 import { LoadingText } from '@/components/LoadingText';
 import { MachineEditor } from '@/components/MachineEditor';
 import { ProjectFileControls, type FileMessage } from '@/components/ProjectFileControls';
+import { retryDeadline, secondsLeft } from '@/components/rateLimit';
 import { prepareImage } from '@/components/resizeImage';
 import { ResultTabs } from '@/components/ResultTabs';
 import { SiteNav } from '@/components/site/SiteNav';
@@ -44,6 +45,11 @@ export default function WizardPage() {
   const [error, setError] = useState<string | null>(null);
   const [fileMessage, setFileMessage] = useState<FileMessage | null>(null);
   const [confirmStartOver, setConfirmStartOver] = useState(false);
+  const [stillWorking, setStillWorking] = useState(false);
+  // RATE_LIMITED countdown (SPEC §10.4): calls stay blocked until the deadline, then the banner clears.
+  // `message` is the first full text, read once by screen readers.
+  const [retry, setRetry] = useState<{ until: number; message: string } | null>(null);
+  const [now, setNow] = useState(0);
   const api = useMemo(() => createApi(), []);
 
   // Restore after mount, so the server render and the first client render match.
@@ -56,6 +62,18 @@ export default function WizardPage() {
     if (state.restored) saveStoredProject(browserStorage(), toProjectData(state));
   }, [state]);
 
+  useEffect(() => {
+    if (retry === null) return;
+    const id = setInterval(() => {
+      const t = Date.now();
+      if (secondsLeft(retry.until, t) === 0) setRetry(null);
+      else setNow(t);
+    }, 250);
+    return () => clearInterval(id);
+  }, [retry]);
+
+  const blocked = busy !== null || retry !== null;
+
   const clearMessages = () => {
     setError(null);
     setFileMessage(null);
@@ -64,10 +82,20 @@ export default function WizardPage() {
   async function run<T>(kind: Exclude<Busy, null>, call: () => Promise<ApiResult<T>>, onOk: (data: T) => void) {
     clearMessages();
     setBusy(kind);
+    const slow = setTimeout(() => setStillWorking(true), 10_000);
     const r = await call();
+    clearTimeout(slow);
+    setStillWorking(false);
     setBusy(null);
-    if (r.ok) onOk(r.data);
-    else setError(r.message);
+    if (r.ok) {
+      onOk(r.data);
+    } else if (r.code === 'RATE_LIMITED') {
+      const t = Date.now();
+      setNow(t);
+      setRetry({ until: retryDeadline(t, r.retryAfterSec ?? 60), message: r.message });
+    } else {
+      setError(r.message);
+    }
   }
 
   const revokeImages = (images: UploadedImage[]) => images.forEach((i) => URL.revokeObjectURL(i.url));
@@ -149,7 +177,7 @@ export default function WizardPage() {
           <p className="font-mono text-xs tracking-widest text-ink-muted uppercase">{COPY.productName}</p>
           <ProjectFileControls state={state} onLoad={loadProject} onMessage={setFileMessage} />
         </header>
-  
+
         <div aria-live="polite">
           {fileMessage?.kind === 'notice' && (
             <div className="glass-panel p-3 text-sm text-ink">
@@ -158,10 +186,11 @@ export default function WizardPage() {
           )}
         </div>
         {fileMessage?.kind === 'error' && <ErrorBanner message={fileMessage.lines.join(' ')} onDismiss={() => setFileMessage(null)} />}
+        {retry && <ErrorBanner message={COPY.errors.RATE_LIMITED(secondsLeft(retry.until, now))} srMessage={retry.message} />}
         {error && <ErrorBanner message={error} onDismiss={() => setError(null)} />}
-  
+
         <StepHeader step={state.step} />
-  
+
         <AnimatePresence mode="wait" initial={false}>
           <motion.main
             key={state.step}
@@ -175,7 +204,7 @@ export default function WizardPage() {
               <InputPanel
                 input={state.input}
                 images={state.images}
-                busy={busy !== null}
+                busy={blocked}
                 onChange={(input) => dispatch({ type: 'input/set', input })}
                 onAddImages={(files) => void addImages(files)}
                 onRemoveImage={removeImage}
@@ -183,7 +212,7 @@ export default function WizardPage() {
                 onDemo={() => void tryDemo()}
               />
             )}
-  
+
             {state.step === 2 && state.machine && (
               <>
                 <div className="grid gap-4 lg:grid-cols-2">
@@ -191,7 +220,7 @@ export default function WizardPage() {
                   <MachineEditor machine={state.machine} onEdit={dispatch} />
                 </div>
                 <div className="flex justify-end">
-                  <Button type="button" disabled={busy !== null} onClick={findGaps} className="w-full sm:w-auto">{COPY.findGaps}</Button>
+                  <Button type="button" disabled={blocked} onClick={findGaps} className="w-full sm:w-auto">{COPY.findGaps}</Button>
                 </div>
             </>
           )}
@@ -202,7 +231,7 @@ export default function WizardPage() {
               findings={state.findings}
               decisions={state.decisions}
               aiUnavailable={state.aiUnavailable}
-              busy={busy !== null}
+              busy={blocked}
               onDecide={decide}
               onClear={(findingId) => dispatch({ type: 'decision/clear', findingId })}
               onBuild={buildSpec}
@@ -213,12 +242,14 @@ export default function WizardPage() {
             <ResultTabs
               result={state.result}
               findings={state.findings}
+              decisions={state.decisions}
+              tokensUsed={state.tokensUsed}
               onBack={() => dispatch({ type: 'step/go', step: 3 })}
               onStartOver={() => setConfirmStartOver(true)}
             />
           )}
 
-          <LoadingText text={busy === null ? null : LOADING[busy]} />
+          <LoadingText text={busy === null ? null : LOADING[busy]} stillWorking={stillWorking} />
         </motion.main>
       </AnimatePresence>
 

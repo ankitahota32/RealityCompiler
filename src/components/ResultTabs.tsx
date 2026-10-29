@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { orderScenarios } from '@/core/scenarios';
-import type { Finding, ProjectResult, Scenario } from '@/core/types';
+import type { Decision, Finding, ProjectResult, Scenario } from '@/core/types';
 import { COPY } from './copy';
 import { DiagramView } from './DiagramView';
+import { ExportPanel } from './ExportPanel';
 import { SeverityBadge, SourceBadge } from './FindingCard';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -46,11 +47,15 @@ function IssueItem({ f, label }: { f: Finding; label?: string }) {
 export function ResultTabs({
   result,
   findings,
+  decisions,
+  tokensUsed,
   onBack,
   onStartOver,
 }: {
   result: ProjectResult;
   findings: Finding[];
+  decisions: Decision[];
+  tokensUsed: number;
   onBack: () => void;
   onStartOver: () => void;
 }) {
@@ -59,6 +64,7 @@ export function ResultTabs({
   const resolved = new Set(result.resolvedFindingIds);
   const aiResolved = findings.filter((f) => f.source === 'ai' && resolved.has(f.id));
   const scenarios = orderScenarios(result.scenarios, result.machine);
+  const exportData = useMemo(() => ({ ...result, decisions, findings }), [result, decisions, findings]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -98,9 +104,13 @@ export function ResultTabs({
             return (
               <section key={origin} className="flex flex-col gap-2">
                 <h3 className="text-xl font-semibold text-ink">{origin === 'decision' ? COPY.fromDecisions : COPY.perTransition}</h3>
-                <ul className="flex flex-col gap-2">
-                  {list.map((s) => <ScenarioItem key={s.id} s={s} />)}
-                </ul>
+                {list.length === 0 ? (
+                  <p className="text-sm text-ink-muted">{COPY.noScenarios}</p>
+                ) : (
+                  <ul className="flex flex-col gap-2">
+                    {list.map((s) => <ScenarioItem key={s.id} s={s} />)}
+                  </ul>
+                )}
               </section>
             );
           })}
@@ -120,7 +130,7 @@ export function ResultTabs({
         </TabsContent>
 
         <TabsContent value="export" className="pt-2">
-          <p className="text-sm text-ink-muted">{COPY.exportsLater}</p>
+          <ExportPanel data={exportData} />
         </TabsContent>
       </Tabs>
 
@@ -128,6 +138,8 @@ export function ResultTabs({
         <Button type="button" variant="outline" onClick={onStartOver} className="w-full sm:w-auto">{COPY.startOver}</Button>
         <Button type="button" variant="outline" onClick={onBack} className="w-full sm:w-auto">{COPY.backToGaps}</Button>
       </div>
+
+      <p className="border-t border-line/60 pt-3 font-mono text-xs tracking-wide text-ink-muted tabular-nums">{COPY.tokensUsed(tokensUsed)}</p>
     </div>
   );
 }
