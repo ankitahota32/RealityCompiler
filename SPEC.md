@@ -164,7 +164,7 @@ After installing, record the exact installed versions in `docs/DECISIONS.md`.
 │  │  ├─ http.ts                   error helpers (§9.4), IP rate limit
 │  │  └─ env.ts                    reads + validates env vars
 │  ├─ app/
-│  │  ├─ layout.tsx  page.tsx  globals.css
+│  │  ├─ layout.tsx  page.tsx (landing)  app/page.tsx (wizard)  about/  contact/  globals.css
 │  │  └─ api/ extract/route.ts  analyze/route.ts  finalize/route.ts  demo/route.ts  health/route.ts
 │  └─ components/  (see §10)
 └─ tests/  core/*.test.ts  server/*.test.ts
@@ -835,7 +835,7 @@ User-facing copy for each code is in §10.4. M7 adds two codes (`UNAUTHENTICATED
 
 ## 10. UI specification
 
-One page (`src/app/page.tsx`), a four-step wizard. Clean, simple, readable; works at phone width (16 px side gutters, no horizontal page scroll; the diagram container may scroll). Supports light and dark via `prefers-color-scheme`. Severity is always shown as TEXT badge (`HIGH`, `MEDIUM`, `LOW`) plus color, never color alone. All buttons/inputs keyboard-accessible with visible focus.
+The wizard is one page at `/app` (`src/app/app/page.tsx`), a four-step wizard. `/` is a landing page; `/about` and `/contact` are static pages. "Get started" on every page links to `/app` (owner change 2026-10-29, see `docs/DECISIONS.md`). Clean, simple, readable; works at phone width (16 px side gutters, no horizontal page scroll; the diagram container may scroll). Dark theme only (owner change 2026-10-29). Severity is always shown as TEXT badge (`HIGH`, `MEDIUM`, `LOW`) plus color, never color alone. All buttons/inputs keyboard-accessible with visible focus.
 
 State: `useReducer` project object `{ step, input, machine, findings, decisions, result }`; autosaved to `localStorage` under key `rc_project_v1` inside try/catch (the app must work if storage throws). "Start over" clears it (confirm first).
 
@@ -1082,7 +1082,7 @@ Local run is the primary target. If deployed to Vercel: request body limit is ab
 3. Text limits: `text` ≤ 4000, `flowName` ≤ 80. Reject longer.
 4. Prompt injection: user text, image text, and machine labels are DATA. Prompts say so. Model output is validated with zod and never executed or rendered as HTML. In the UI render all model-provided strings as plain text (React default escaping). Mermaid labels are sanitized (§11.1) and `securityLevel: 'strict'`.
 5. Temp files: written to `os.tmpdir()` with random names, deleted right after upload (also on error). Uploaded Gemini files are deleted after the call (best effort).
-6. No analytics, no third-party scripts. No cookies in M0 to M6. (M7 adds only the strictly necessary Supabase sign-in session cookies.) Fonts: system fonts only.
+6. No analytics, no third-party scripts. No cookies in M0 to M6. (M7 adds only the strictly necessary Supabase sign-in session cookies.) Fonts: Inter, Space Mono and Instrument Serif, self-hosted through `next/font` at build time (the browser never requests them from a third party).
 7. Errors never include stack traces or env values.
 8. Project files are untrusted input (§11.7): size cap, zod validation, `validateMachine`, no evaluation, plain-text rendering. Uploaded images are never written to `localStorage`, to project files or to the cloud.
 9. M7 only: Row Level Security is enabled on every table and every policy is tied to `auth.uid()`; the service-role key is never used or stored; the public anon key is safe only because of RLS; project content and email addresses are never logged; the server decides who a user is with `supabase.auth.getUser()`, never from a client-sent user id (§19).
