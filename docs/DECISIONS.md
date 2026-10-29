@@ -79,6 +79,10 @@ Choices made where SPEC.md is silent, plus dependency and version records (SPEC 
 | 2026-10-29 | M5: export date and file types. | `generatedAt` is the viewer's local date; `.md` as `text/markdown`, `.feature` and `.ts` as `text/plain`, JSON as `application/json`. | SPEC §11 asks for YYYY-MM-DD; the local date matches what the user sees. |
 | 2026-10-29 | M5: rate-limit countdown. | The banner counts down every second and cannot be dismissed; every button that starts a call stays disabled until 0, then the banner disappears. Screen readers hear the first full message once, not each tick. | SPEC §10.4 asks for a countdown and re-enabling; a live region that changes every second would be noisy. |
 | 2026-10-29 | M5: token footer placement. | Shown at the bottom of Step 4 only, as SPEC §10.1 places it. | Follows SPEC. |
+| 2026-10-29 | M6: eval scoring file outside the SPEC §4 layout. | `scripts/evalScore.ts` holds the case schema and scoring; `scripts/eval.ts` only does I/O and model calls. Tests in `tests/scripts/`. | Scoring is pure and must be tested without the API. |
+| 2026-10-29 | M6: eval details SPEC leaves open. | A `matchChecks` entry without `requiredKind` matches on `ruleId` alone; keyword matching is case-insensitive on title + description; `flowType` may be `auto`; a failed case prints `failed: <code>` and the run continues. | Simplest reading of §14.3. |
+| 2026-10-29 | M6: extraction model (deferred from M2). | Keep `gemma-4-31b-it`. Eval: both models 50% recall on the BNPL case; 26b took 113 s against 56 s for 31b this time, the opposite of the spike. | Two runs give no reason to change the SPEC default. |
+| 2026-10-29 | M6: analyze retry not counted by the budget. | Not changed in M6; documented in FINAL_REPORT with a proposed fix (reserve budget before the §7.5 retry). | It changes M3 code (nongoals §6: do not rewrite working modules in another milestone); the owner decides. |
 
 ## Installed versions
 
@@ -110,6 +114,8 @@ Recorded 2026-10-29 at M0 (SPEC §3, design.md §5).
 Runtime: Node 22.13.0, npm 11.4.2.
 
 ## Ideas for later
+
+- Count the analyze §7.5 retry in the token budget (wait for room before the second attempt).
 
 - Upload images to the Files API from a `Blob` instead of a temp file (spike: the SDK accepts it). SPEC §7.1 step 2 asks for a temp file, so not done.
 - Try config-level `mediaResolution: LOW` for typed screenshots (276 → 84 prompt tokens on the sketch, still read correctly).

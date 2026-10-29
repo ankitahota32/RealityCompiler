@@ -1,0 +1,21 @@
+{
+  "id": "bnpl-checkout",
+  "name": "BNPL checkout",
+  "flowType": "payments",
+  "text": "Buy Now Pay Later checkout. The user opens the cart and taps Proceed. On the Checkout Review screen the user enters details and taps Submit. The app then checks the user's credit with a bank. If credit is approved the user sees the Confirm Plan screen where they confirm and the order is placed. If credit is insufficient the user sees a Credit Declined screen. From Confirm Plan the user can cancel and go back to the cart.",
+  "imagePaths": [],
+  "seededGaps": [
+    { "id": "g1", "description": "Credit check gets no answer",
+      "matchChecks": [{ "ruleId": "MISSING_HANDLER", "requiredKind": "timeout" }],
+      "matchKeywords": ["timeout", "no answer", "does not respond", "not respond"] },
+    { "id": "g2", "description": "Double tap on Submit or Confirm",
+      "matchChecks": [{ "ruleId": "MISSING_HANDLER", "requiredKind": "duplicate" }],
+      "matchKeywords": ["twice", "double", "duplicate"] },
+    { "id": "g3", "description": "Credit Declined is a dead end",
+      "matchChecks": [{ "ruleId": "DEAD_END_STATE" }],
+      "matchKeywords": ["dead end", "declined"] },
+    { "id": "g4", "description": "Approval arrives after the user left",
+      "matchChecks": [],
+      "matchKeywords": ["after the user", "late", "left the app", "abandon"] }
+  ]
+}
