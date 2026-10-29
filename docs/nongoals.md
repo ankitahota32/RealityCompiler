@@ -55,13 +55,13 @@ This file lists what must NOT be built or changed. It protects the scope of `SPE
 
 ## 5. UI and design non-goals
 
-- No marketing landing page, hero section or pricing page. The app opens straight into Step 1.
-- No extra routes or pages beyond the single wizard page (and `/auth/callback` in M7).
-- No theme switcher or theme builder. Light and dark follow `prefers-color-scheme`.
-- No 3D, WebGL, canvas particle effects, parallax, scroll-jacking, cursor trails, marquees or looping background animation.
+- No pricing page. The landing page (`/`), `/about` and `/contact` exist by owner decision (2026-10-29); no other routes beyond the wizard at `/app` (and `/auth/callback` in M7).
+- No contact form that sends or stores messages. Contact is a static page with links.
+- No theme switcher or theme builder. The app is dark only.
+- No 3D, WebGL, parallax, scroll-jacking, cursor trails or marquees. The only looping animations are on the landing, About and Contact pages (hero arrow ring, drifting card glows); they stop with reduced motion, and the wizard has none.
 - No animation that changes what a button does, hides text from screen readers, or cannot be turned off by reduced-motion settings.
 - No animating the Mermaid diagram or layout shifts that move the content the user is reading.
-- No remote images, remote fonts, CDN scripts or hotlinked assets inside copied components. System fonts only.
+- No remote images, remote fonts, CDN scripts or hotlinked assets. Fonts are Inter, Space Mono and Instrument Serif through `next/font` (self-hosted).
 - No paid or "Pro" Skiper UI components. No component that needs a 21st.dev API key.
 - No `gsap` or other animation libraries beyond `motion`, unless a DECISIONS entry explains why a specific free component needs it.
 - No copying logos, brand names, photos, copy text or artwork from a reference screenshot. Take structure, spacing, color feel and motion style only.

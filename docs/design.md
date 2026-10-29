@@ -14,7 +14,7 @@ Avoid the generic look: no gradient washes, no identical rounded cards with the 
 
 ## 2. Tokens
 
-System fonts only (SPEC §13). Light and dark follow `prefers-color-scheme` (SPEC §10). There is no theme switcher.
+**Updated 2026-10-29 (owner):** dark theme only, palette from `docs/design-inspo/challenges inspo`, fonts Inter (text), Space Mono (labels and buttons on site pages) and Instrument Serif italic (accent words), self-hosted with `next/font`. The live values are in `src/app/globals.css`; the tables below keep the original M4 values for history. Site pages are described in §10.
 
 ### Color
 
@@ -260,4 +260,32 @@ Fill one row per installed or adapted vendor component.
 
 | Date | Component | Source (Skiper UI / Watermelon UI / shadcn) | Install command | Used in | Free / Pro | Changes made | New dependencies |
 |---|---|---|---|---|---|---|---|
-| | | | | | | | |
+| 2026-10-29 | button | shadcn (style base-nova) | `npx shadcn@4.23.0 add button` | Everywhere | Free | Radius 6 px (`rounded-sm`); sizes 44 px (default, lg, icon), 36 px (sm); focus ring 2 px brand, offset 2 px | `@base-ui/react` 1.9.0 |
+| 2026-10-29 | tabs | shadcn | `… add tabs` | MachineEditor, ResultTabs | Free | List height 44 px | – |
+| 2026-10-29 | dialog | shadcn | `… add dialog` | ConfirmDialog | Free | Removed backdrop blur (design.md §4 rule 7); backdrop `black/40`; soft shadow on the dialog | – |
+| 2026-10-29 | radio-group | shadcn | `… add radio-group` | FindingCard | Free | Focus ring | – |
+| 2026-10-29 | input, textarea | shadcn | `… add input textarea` | All forms | Free | Radius 6 px; input 44 px; focus ring | – |
+| 2026-10-29 | label, table | shadcn | `… add label table` | Forms, MatrixTable, TransitionList | Free | None | – |
+| 2026-10-29 | badge | shadcn | `… add badge` | Severity, source, Check this | Free | Radius 6 px; 14 px text, weight 450; height 24 px | – |
+| 2026-10-29 | switch | shadcn | `… add switch` | MachineEditor | Free | Focus ring | – |
+| 2026-10-29 | native-select | Written in-repo (replaces shadcn select) | – | Flow type, End type, event kind, Add transition | – | Plain `<select>` in the tokens; Base UI Select showed raw values instead of labels | – |
+
+| 2026-10-29 | ArrowField, DriftingGlow, TiltCard, Faq | Written in-repo with `motion` | – | Landing, About, Contact | – | Canvas arrow ring (rotation, pointer repel), random glow drift, pointer tilt, accordion; all off with reduced motion | – |
+
+No Skiper UI or Watermelon UI components yet: the owner picks them after M4 (shadcn base plus `motion` for the required motions until then). No remote images, fonts or scripts in any file above (checked).
+
+## 10. Site pages (owner request, 2026-10-29)
+
+References: `docs/design-inspo/` (hero, working flow, challenges). Structure, colour feel and motion are taken; no logos, brand names or copy.
+
+- **Nav (every page):** product mark and name, Home, About us, Contact us (mono uppercase), Get started button. Below 768 px the links move into a menu button.
+- **Hero (`/`):** deep navy to blue wash with a pale glow at the bottom. A ring of small glowing arrows on a canvas turns once every 4 minutes; arrows within 120 px of the pointer ease away and settle back. Mono badge, Inter headline with Instrument Serif italic accents, Get started (light) and See how it works (dark).
+- **Working flow:** black rounded panel, gradient title, four glass cards (one per wizard step), each with a blurred blue to cyan glow that drifts to a random spot every 5 to 9 s.
+- **Challenges:** black with electric blue and cyan glows, very large lowercase text with a serif italic "(rough plan),", frosted glass quote cards that tilt up to 10 degrees toward the mouse, and one solid blue answer card. Phones stack the cards.
+- **FAQ:** accordion in a glass panel; one answer open at a time; real buttons with `aria-expanded`.
+- **Footer:** links, note, faint serif wordmark.
+- **About / Contact:** shared intro (badge, mixed-type headline, drifting glow) and glass cards. Contact is links only (email, GitHub issues, source).
+- **Shared backdrop:** after the hero, every section uses `.site-ambient` (page colour plus a faint blue dot grid) with soft glows, and the hero fades into it, so sections join without hard edges.
+- **Wizard (`/app`):** same backdrop with still glows, `.glass-panel` cards, Space Mono buttons and step labels, gradient step title, white glowing primary button.
+- **Micro-interactions:** buttons lift on hover and press in; nav links underline; cards lift; icons turn; sections fade up once on scroll.
+- **Reduced motion:** the arrow ring draws one still frame and ignores the pointer; glows do not drift; cards do not tilt.

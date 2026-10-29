@@ -2,27 +2,22 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* shadcn init adds a class-based dark variant. Replaced: SPEC §10 wants prefers-color-scheme. */
-@custom-variant dark (@media (prefers-color-scheme: dark));
+/* Dark theme everywhere (owner decision, DECISIONS.md 2026-10-29); the html element carries class "dark". */
+@custom-variant dark (&:where(.dark, .dark *));
 
-/* Design tokens (docs/design.md §2). */
+/* Design tokens (docs/design.md §2). Palette from docs/design-inspo/challenges. */
 :root {
-  --paper: #F5F7FA; --surface: #FFFFFF; --ink: #101B33; --ink-muted: #53627C;
-  --line: #D5DCE6; --brand: #2450D6; --verified: #0B7A75; --ai: #5B3FD0;
-  --sev-high: #B3261E; --sev-medium: #8A5A00; --sev-low: #3F5870; --grid: #E3E9F1;
+  color-scheme: dark;
+  --paper: #05060B; --surface: #0D1120; --ink: #F2F5FF; --ink-muted: #A3AECB;
+  --line: #222B47; --brand: #2F3BFF; --verified: #4FD1C5; --ai: #B4A8FF;
+  --sev-high: #FF8A80; --sev-medium: #FFC266; --sev-low: #A9BCD0; --grid: #111830;
   --on-brand: #FFFFFF;
+  --glow-blue: #1F2BFF; --glow-cyan: #2EE6F0; --focus: #5CE1F0;
+  --glass: rgba(255, 255, 255, 0.06); --glass-strong: rgba(255, 255, 255, 0.12); --glass-line: rgba(255, 255, 255, 0.14);
 
   /* Motion tokens (docs/design.md §4). */
   --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 320ms;
   --ease-enter: cubic-bezier(0.2, 0, 0, 1);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #0D1420; --surface: #141D2E; --ink: #E6ECF5; --ink-muted: #9AA9C2;
-    --line: #26324A; --brand: #7C9BFF; --verified: #4FD1C5; --ai: #A99BFF;
-    --sev-high: #FF8A80; --sev-medium: #FFC266; --sev-low: #A9BCD0; --grid: #1B2740;
-    --on-brand: #0D1420;
-  }
 }
 
 /* shadcn variables mapped to the tokens so vendored components follow this palette. */
@@ -44,7 +39,7 @@
   --destructive: var(--sev-high);
   --border: var(--line);
   --input: var(--line);
-  --ring: var(--brand);
+  --ring: var(--focus);
   /* 10px for panels and cards; sm = 6px (inputs, buttons, badges), xl = 14px (dialogs). */
   --radius: 10px;
 }
@@ -55,8 +50,12 @@
   --color-line: var(--line);     --color-brand: var(--brand);
   --color-verified: var(--verified); --color-ai: var(--ai);
   --color-sev-high: var(--sev-high); --color-sev-medium: var(--sev-medium); --color-sev-low: var(--sev-low);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --color-glow-blue: var(--glow-blue); --color-glow-cyan: var(--glow-cyan);
+  --color-glass: var(--glass); --color-glass-strong: var(--glass-strong); --color-glass-line: var(--glass-line);
+  /* Self-hosted by next/font in layout.tsx (no request to Google from the browser). */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
   --font-heading: var(--font-sans);
 
   --color-background: var(--background);
@@ -94,9 +93,51 @@
   }
 }
 
+/* Reduced motion (design.md §4): CSS transitions and animations from vendored components become instant. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Quiet shimmer on loading text (design.md §4 rule 4). Opacity only. */
+@keyframes rc-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.loading-shimmer { animation: rc-shimmer 1.6s ease-in-out infinite; }
+
 .drafting-grid {
   background-image:
     linear-gradient(var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+/* Liquid glass (design.md §10). In the components layer so utilities can override them. */
+@layer components {
+  .glass {
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--glass-line);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(255, 255, 255, 0.04), 0 20px 50px -20px rgba(0, 0, 0, 0.7);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
+  }
+  /* Wizard panels and cards: the same glass, quieter, with a hover response. */
+  .glass-panel {
+    border-radius: 16px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
+    border: 1px solid var(--glass-line);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 16px 40px -24px rgba(0, 0, 0, 0.8);
+    -webkit-backdrop-filter: blur(14px) saturate(130%);
+    backdrop-filter: blur(14px) saturate(130%);
+    transition: border-color var(--dur-base) var(--ease-enter), background-color var(--dur-base) var(--ease-enter);
+  }
+  .glass-panel:hover { border-color: rgba(255, 255, 255, 0.24); }
+}
+
+/* Shared backdrop for every section after the hero: the same blue dot grid, very faint, so sections read as one surface. */
+.site-ambient {
+  background-color: var(--paper);
+  background-image: radial-gradient(rgba(150, 185, 255, 0.09) 1px, transparent 1.2px);
+  background-size: 22px 22px;
 }

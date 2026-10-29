@@ -34,7 +34,7 @@ The key design rule: **the model proposes, code verifies.** Gemma reads messy in
 | Server | `src/server` | `src/core`, `src/packs`, `@google/genai`, Node | `src/components` |
 | API routes | `src/app/api` | `src/server`, `src/core` | `src/components` |
 | UI components | `src/components` | `src/core`, UI libraries | `src/server`, `src/packs` |
-| Page | `src/app/page.tsx`, `layout.tsx` | `src/components`, `src/core` | `src/server` |
+| Pages | `src/app/page.tsx` (landing), `app/page.tsx` (wizard), `about/`, `contact/`, `layout.tsx` | `src/components`, `src/core` | `src/server` |
 
 `src/core` runs in both the browser and the server. That is why the checker can run live after each edit in Step 2 and again on the server in `/api/analyze`, with identical results.
 
@@ -122,7 +122,7 @@ Step details:
 
 Order of checks per route: IP limiter, input validation, (M7 only: user check and daily allowance), token budget guard, model call.
 
-## 7. Client architecture (`src/components`, `src/app/page.tsx`)
+## 7. Client architecture (`src/components`, `src/app/app/page.tsx`)
 
 One page, four-step wizard, state in a single `useReducer`:
 
@@ -163,7 +163,7 @@ src/app/globals.css       design tokens as CSS variables (see docs/design.md)
 
 - Behavior lives in the spec-named components. Vendored components only provide look and motion.
 - Replacing a vendored component must never change behavior, text, or an API call.
-- Server components: `layout.tsx` only. `page.tsx` and everything under it that holds state is a client component.
+- Server components: `layout.tsx` and the landing, About and Contact pages. The wizard `app/page.tsx` and everything under it that holds state is a client component. Site sections live in `src/components/site/`.
 - Animation uses the `motion` package. The whole app is wrapped once so reduced-motion preferences are honored (details in `docs/design.md`).
 
 ## 8. Error flow
