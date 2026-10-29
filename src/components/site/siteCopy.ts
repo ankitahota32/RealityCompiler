@@ -1,7 +1,7 @@
 // Text for the landing, About and Contact pages (owner request, DECISIONS.md 2026-10-29).
 // The wizard's exact strings stay in ../copy.ts.
 
-export const CONTACT_EMAIL = 'hello@example.com'; // TODO(owner): replace with the real contact address.
+export const CONTACT_EMAIL = 'adityanarayanasahu33@gmail.com';
 export const REPO_URL = 'https://github.com/ankitahota32/RealityCompiler';
 
 export const NAV_LINKS = [

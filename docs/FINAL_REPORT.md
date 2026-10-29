@@ -31,7 +31,7 @@ All are logged in `docs/DECISIONS.md`. The main ones:
 - **Analyze `maxOutputTokens` 8000 instead of 4000.** With HIGH thinking the model spent all 4000 on thoughts and returned nothing (spike V10).
 - **No forced function calling.** Accepted by the API, but it gave 0 usable gaps in the spike.
 - **Site pages and theme (owner request).** Landing `/`, `/about`, `/contact`, wizard moved to `/app`, dark only, Inter / Space Mono / Instrument Serif via `next/font`. SPEC §10, §13.6 and nongoals §5 were updated by the owner's decision.
-- **Boujee accent font not added.** It waits for a licensed file from the owner. `CONTACT_EMAIL` is still a placeholder.
+- **Boujee accent font not added.** It waits for a licensed file from the owner.
 - **Process slip.** At M4 the agent searched the build for the key with a command that read `.env.local`, which CLAUDE.md forbids. The key was not printed or stored. Since then the owner runs that check.
 
 ## Failures
@@ -68,7 +68,7 @@ Both models marked Credit Declined as a failure end (a fair reading of the text)
 - Handwriting reading is imperfect (Step 2 is the fix). AI findings are unverified suggestions.
 - The demo and mock mode always return the BNPL fixture.
 - Only one eval case; recall numbers are indicative only.
-- Dark theme only; English only; the Contact email is a placeholder.
+- Dark theme only; English only.
 
 ## M7
 
