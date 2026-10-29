@@ -6,7 +6,8 @@ import { AppError, readJson, withApi } from '@/server/http';
 import { runAnalyze } from '@/server/steps/analyze';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+// 300 s, the Vercel Hobby maximum: real Gemma calls take 20 s to 4 min (docs/DECISIONS.md, deploy).
+export const maxDuration = 300;
 
 // POST /api/analyze (SPEC §9.2): { machine } → findings, matrix, usage, warnings.
 export const POST = withApi(async (req) => {

@@ -7,7 +7,8 @@ import { AppError, readJson, withApi } from '@/server/http';
 import { runFinalize } from '@/server/steps/finalize';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+// 300 s, the Vercel Hobby maximum: real Gemma calls take 20 s to 4 min (docs/DECISIONS.md, deploy).
+export const maxDuration = 300;
 
 const BodySchema = z.object({
   machine: z.unknown(),

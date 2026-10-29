@@ -773,7 +773,7 @@ export const generic = [
 
 ## 9. HTTP API (FIXED)
 
-All routes are Next.js route handlers (`runtime = 'nodejs'`, `maxDuration = 60`). All responses are JSON. All routes are wrapped by the error helper (§9.4) and the IP limiter (§12.2).
+All routes are Next.js route handlers (`runtime = 'nodejs'`, `maxDuration = 60`; 300 for extract, analyze and finalize since 2026-10-29, see `docs/DECISIONS.md`). All responses are JSON. All routes are wrapped by the error helper (§9.4) and the IP limiter (§12.2).
 
 ### 9.1 `POST /api/extract` (multipart/form-data)
 
@@ -1071,7 +1071,7 @@ In-memory fixed window: 20 requests per minute per client key (first value of `x
 
 ### 12.4 Deployment notes
 
-Local run is the primary target. If deployed to Vercel: request body limit is about 4.5 MB (the client resize keeps us under it; the server enforces total ≤ 4 MB); in-memory limiter and budget guard are per-instance only (acceptable for a demo); `maxDuration = 60` is already set on the routes. If M7 is deployed, set the Supabase variables in the host's environment settings and add the deployed `/auth/callback` URL in the Supabase dashboard (§19.10).
+Local run is the primary target. If deployed to Vercel: request body limit is about 4.5 MB (the client resize keeps us under it; the server enforces total ≤ 4 MB); in-memory limiter and budget guard are per-instance only (acceptable for a demo); the three Gemma routes set `maxDuration = 300` (the Hobby maximum), because real calls take up to about 4 minutes. If M7 is deployed, set the Supabase variables in the host's environment settings and add the deployed `/auth/callback` URL in the Supabase dashboard (§19.10).
 
 ---
 
