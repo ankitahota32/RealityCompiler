@@ -93,6 +93,8 @@ export function FindingsPanel({
       </div>
       {showMatrix && <MatrixTable machine={machine} />}
 
+      {total === 0 && <p role="status" className="glass-panel p-3 text-sm text-ink">{COPY.noFindings}</p>}
+
       <ul className="flex flex-col gap-3">
         {findings.map((f, i) => (
           <motion.li

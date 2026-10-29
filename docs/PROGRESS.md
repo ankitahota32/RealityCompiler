@@ -94,3 +94,26 @@ Done:
 Failed and fixed: one client test passed `undefined` to a defaulted parameter, so the "no usage" case never ran; fixed the test helper.
 
 Next: M4 — UI (all of SPEC §10 including project file controls). Starts with a plan; design.md applies.
+
+### 2026-10-29 — M4 UI (done; committed by the owner as fe3bef2)
+
+Done:
+- The four-step wizard of SPEC §10 with `ProjectFileControls` (§10.5): `useReducer` state in `wizardState.ts`, autosave of `ProjectData` only, images in memory only, Mermaid shown as an `<img>`, exact strings in `copy.ts`.
+- Owner additions (DECISIONS.md): landing page `/` (hero with canvas arrow ring, working flow, challenges, FAQ, footer), `/about`, `/contact`; wizard moved to `/app`; dark theme, liquid glass, Inter / Space Mono / Instrument Serif via `next/font`; micro-interactions; SPEC §10 and §13.6 and nongoals §5 updated.
+- 26 UI tests (wizard reducer and storage, API client errors). Total 157.
+
+"Done when" check: owner ran the 14.2 items 1, 2, 4, 5, 6 in mock mode and committed.
+
+Open: Boujee accent font waits for a licensed file from the owner; `CONTACT_EMAIL` is a placeholder.
+
+### 2026-10-29 — M5 Exports and polish
+
+Done:
+- `src/core/export/files.ts`: `buildExportFiles` → `spec.md`, `scenarios.feature`, `playwright-skeleton.spec.ts`, `machine.json`, `findings.json` (§11.5 shapes).
+- `ExportPanel` with Download and Copy per file (Blob download, clipboard with a fallback line); shared `download.ts`, also used by Save project file.
+- Step 4 footer `Tokens used this session: {n}`; `Still working. The free tier can be slow.` after 10 s; RATE_LIMITED countdown that blocks calls and clears at 0 (`rateLimit.ts`); empty states for 0 findings and empty scenario groups.
+- 7 new tests (export files, countdown). Total 164.
+
+"Done when" check: mock-mode run demo → analyze → finalize → `buildExportFiles` gives five non-empty files (6.1K, 2.7K, 5.8K, 5.7K, 7.1K bytes) and `spec.md` has the Mermaid block. Browser download check (acceptance item 3) by the owner.
+
+Next: M6 — eval harness, README, FINAL_REPORT.

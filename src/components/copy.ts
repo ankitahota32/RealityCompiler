@@ -88,12 +88,23 @@ export const COPY = {
   noIssues: 'No open issues.',
   fromDecisions: 'From decisions',
   perTransition: 'Per transition',
-  exportsLater: 'Downloads are added in the next milestone.',
+  noScenarios: 'None yet.',
+  noFindings: 'No gaps found. You can build your spec now.',
+  tokensUsed: (n: number) => `Tokens used this session: ${n}`, // SPEC
+
+  // Export tab (file names are SPEC; button words fill gaps)
+  download: 'Download',
+  copy: 'Copy', // SPEC
+  copied: 'Copied',
+  copyFailed: 'Could not copy. Use Download instead.',
+  downloadLabel: (name: string) => `Download ${name}`,
+  copyLabel: (name: string) => `Copy ${name}`,
 
   // Loading (SPEC §10.2)
   loadingExtract: 'Reading your plan…',
   loadingAnalyze: 'Looking for gaps…',
   loadingFinalize: 'Writing your specification…',
+  stillWorking: 'Still working. The free tier can be slow.',
 
   // Errors (SPEC §10.4)
   errors: {

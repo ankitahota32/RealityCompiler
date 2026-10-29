@@ -5,6 +5,7 @@ import { PROJECT_FILE_MAX_BYTES, parseProjectFile, projectFileName, serializePro
 import type { ProjectData } from '@/core/types';
 import { ConfirmDialog } from './ConfirmDialog';
 import { COPY } from './copy';
+import { downloadText } from './download';
 import { Button } from './ui/button';
 import { canSave, hasContent, toProjectData, type WizardState } from './wizardState';
 
@@ -32,12 +33,7 @@ export function ProjectFileControls({
 
   const save = () => {
     const text = serializeProject(toProjectData(state), new Date().toISOString());
-    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = projectFileName(state.machine?.name ?? state.input.flowName);
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 0);
+    downloadText(projectFileName(state.machine?.name ?? state.input.flowName), text, 'application/json');
     onMessage({ kind: 'notice', lines: [COPY.projectDownloaded] });
   };
 
