@@ -871,6 +871,7 @@ Persistence rules (v2.1): uploaded images are held in memory only. They are neve
 **Step 4 — Result** ("Your specification")
 - Tabs: `Map` (diagram of the final machine), `Rules`, `Scenarios` (decision scenarios first, then per-transition), `Open issues` (remaining findings; accepted ones labeled `Accepted as-is`; AI-resolved ones labeled `Resolved by your answer (not machine-verified)`), `Export`.
 - Export tab: five download buttons and `Copy` buttons: `spec.md`, `scenarios.feature`, `playwright-skeleton.spec.ts`, `machine.json`, `findings.json`. Downloads are created client-side from the data (Blob), using the export functions in `src/core/export`.
+- Export tab also has a `How to use these files` button (owner change 2026-10-31): a dialog with a summary of this result, a recommended order, and for each file what it is, who uses it, where to put it and how to use it. Fixed text plus counts from the result; no model call.
 - Footer line: `Tokens used this session: {sum of usage.totalTokens}` (running total).
 - Buttons: `Back to gaps`, `Start over`.
 

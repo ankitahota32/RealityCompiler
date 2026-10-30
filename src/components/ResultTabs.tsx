@@ -5,6 +5,7 @@ import { orderScenarios } from '@/core/scenarios';
 import type { Decision, Finding, ProjectResult, Scenario } from '@/core/types';
 import { COPY } from './copy';
 import { DiagramView } from './DiagramView';
+import { ExportGuide } from './ExportGuide';
 import { ExportPanel } from './ExportPanel';
 import { SeverityBadge, SourceBadge } from './FindingCard';
 import { Badge } from './ui/badge';
@@ -129,7 +130,10 @@ export function ResultTabs({
           )}
         </TabsContent>
 
-        <TabsContent value="export" className="pt-2">
+        <TabsContent value="export" className="flex flex-col gap-3 pt-2">
+          <div className="flex justify-end">
+            <ExportGuide data={exportData} />
+          </div>
           <ExportPanel data={exportData} />
         </TabsContent>
       </Tabs>

@@ -84,6 +84,7 @@ Choices made where SPEC.md is silent, plus dependency and version records (SPEC 
 | 2026-10-29 | M6: extraction model (deferred from M2). | Keep `gemma-4-31b-it`. Eval: both models 50% recall on the BNPL case; 26b took 113 s against 56 s for 31b this time, the opposite of the spike. | Two runs give no reason to change the SPEC default. |
 | 2026-10-29 | M6: analyze retry not counted by the budget. | Not changed in M6; documented in FINAL_REPORT with a proposed fix (reserve budget before the §7.5 retry). | It changes M3 code (nongoals §6: do not rewrite working modules in another milestone); the owner decides. |
 | 2026-10-29 | Deploy: free hosting and route time limit. | Vercel Hobby (free, non-commercial) from the GitHub repo. `maxDuration` raised from 60 to 300 s on `/api/extract`, `/api/analyze`, `/api/finalize` (300 s is the Hobby maximum); demo and health stay at 60. | The M6 eval measured analyze at 90 to 149 s per call (up to about 240 s with its retry); 60 s would cut every real analyze. |
+| 2026-10-31 | Export guide (owner request). | A `How to use these files` button on the Export tab opens a dialog: a summary of this result (counts, open issues), a recommended order, and per file what it is, who uses it, where to put it and how to use it (with example paths and commands). Text lives in `src/components/guideContent.ts`; the dialog is `ExportGuide.tsx`; SPEC §10.1 updated. | Fixed, tested text instead of an AI answer: no extra Gemma call (Appendix G rule 3), works offline and in demo mode, no chat (nongoals §1). |
 
 ## Installed versions
 

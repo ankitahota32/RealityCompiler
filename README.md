@@ -60,7 +60,7 @@ The site has a landing page (`/`), About (`/about`), Contact (`/contact`) and th
    Click **Read my plan**.
 2. **Does this match your plan?** Check the diagram. Fix anything the model read wrong in the States, Events and Transitions tabs. Items marked `Check this` were read with low confidence. The line `n structural issues right now` updates as you edit. Click **Find gaps**.
 3. **What did we miss?** Each card is one gap. Pick an option, write your own answer, **Accept as-is** or **Decide later**. **Show completeness table** shows which states handle a timeout, failure, cancel or double submit. Click **Build my spec**.
-4. **Your specification.** Map, Rules, Scenarios, Open issues and Export. The Export tab downloads or copies `spec.md`, `scenarios.feature`, `playwright-skeleton.spec.ts`, `machine.json` and `findings.json`. The footer shows the tokens used this session.
+4. **Your specification.** Map, Rules, Scenarios, Open issues and Export. The Export tab downloads or copies `spec.md`, `scenarios.feature`, `playwright-skeleton.spec.ts`, `machine.json` and `findings.json`. **How to use these files** explains what each file is for, where to put it in a project and how to start with it. The footer shows the tokens used this session.
 
 Real calls are slow on the free tier: extract takes about 20 to 60 s, analyze 1 to 3 min, finalize 15 to 30 s. After 10 s the app says `Still working. The free tier can be slow.`
 
