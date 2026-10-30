@@ -5,7 +5,8 @@ import { AppError, detectImageType, withApi } from '@/server/http';
 import { runExtract } from '@/server/steps/extract';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+// 300 s, the Vercel Hobby maximum: real Gemma calls take 20 s to 4 min (docs/DECISIONS.md, deploy).
+export const maxDuration = 300;
 
 const MAX_IMAGES = 3;
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024;

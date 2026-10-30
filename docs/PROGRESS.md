@@ -117,3 +117,18 @@ Done:
 "Done when" check: mock-mode run demo → analyze → finalize → `buildExportFiles` gives five non-empty files (6.1K, 2.7K, 5.8K, 5.7K, 7.1K bytes) and `spec.md` has the Mermaid block. Browser download check (acceptance item 3) by the owner.
 
 Next: M6 — eval harness, README, FINAL_REPORT.
+
+M5 committed by the owner as 5a975e0.
+
+### 2026-10-29 — M6 Eval harness and docs (done)
+
+Done:
+- `scripts/eval.ts` (`npm run eval`): real extract → analyze per case, refuses `MOCK_GEMMA=1` and a missing key, prints case / seeded / found / recall / tokens / baseline / notes. Scoring in `scripts/evalScore.ts` (pure, 7 tests in `tests/scripts/`).
+- `evals/cases/bnpl-checkout.json` (Appendix F), `evals/README.md`, `evals/baselines/` for pasted chatbot answers.
+- Full `README.md`; `docs/FINAL_REPORT.md` with every §18 item, token usage per step, eval results, deviations, failures, limitations, `M7 not requested`.
+
+"Done when" check: `typecheck`, `lint`, `test` (171 tests, 20 files), `build` pass; build output has no `NEXT_PUBLIC_GEMINI`. `npm run eval` ran twice with the real API: 31b extract → recall 50%, AI part of analyze unavailable; 26b extract → recall 50%, 3 AI findings, 16,269 tokens.
+
+Failed: eval run 1 lost the AI gaps, most likely because the §7.5 retry is not counted by the token budget and hit Google's per-minute limit. Recorded in FINAL_REPORT; fix proposed to the owner.
+
+Next: nothing required. Open for the owner: approve the budget fix for the analyze retry, Boujee font file, contact email, eval baselines and more cases. M7 only if asked.

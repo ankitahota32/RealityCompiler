@@ -773,7 +773,7 @@ export const generic = [
 
 ## 9. HTTP API (FIXED)
 
-All routes are Next.js route handlers (`runtime = 'nodejs'`, `maxDuration = 60`). All responses are JSON. All routes are wrapped by the error helper (§9.4) and the IP limiter (§12.2).
+All routes are Next.js route handlers (`runtime = 'nodejs'`, `maxDuration = 60`; 300 for extract, analyze and finalize since 2026-10-29, see `docs/DECISIONS.md`). All responses are JSON. All routes are wrapped by the error helper (§9.4) and the IP limiter (§12.2).
 
 ### 9.1 `POST /api/extract` (multipart/form-data)
 
@@ -871,6 +871,7 @@ Persistence rules (v2.1): uploaded images are held in memory only. They are neve
 **Step 4 — Result** ("Your specification")
 - Tabs: `Map` (diagram of the final machine), `Rules`, `Scenarios` (decision scenarios first, then per-transition), `Open issues` (remaining findings; accepted ones labeled `Accepted as-is`; AI-resolved ones labeled `Resolved by your answer (not machine-verified)`), `Export`.
 - Export tab: five download buttons and `Copy` buttons: `spec.md`, `scenarios.feature`, `playwright-skeleton.spec.ts`, `machine.json`, `findings.json`. Downloads are created client-side from the data (Blob), using the export functions in `src/core/export`.
+- Export tab also has a `How to use these files` button (owner change 2026-10-31): a dialog with a summary of this result, a recommended order, and for each file what it is, who uses it, where to put it and how to use it. Fixed text plus counts from the result; no model call.
 - Footer line: `Tokens used this session: {sum of usage.totalTokens}` (running total).
 - Buttons: `Back to gaps`, `Start over`.
 
@@ -1071,7 +1072,7 @@ In-memory fixed window: 20 requests per minute per client key (first value of `x
 
 ### 12.4 Deployment notes
 
-Local run is the primary target. If deployed to Vercel: request body limit is about 4.5 MB (the client resize keeps us under it; the server enforces total ≤ 4 MB); in-memory limiter and budget guard are per-instance only (acceptable for a demo); `maxDuration = 60` is already set on the routes. If M7 is deployed, set the Supabase variables in the host's environment settings and add the deployed `/auth/callback` URL in the Supabase dashboard (§19.10).
+Local run is the primary target. If deployed to Vercel: request body limit is about 4.5 MB (the client resize keeps us under it; the server enforces total ≤ 4 MB); in-memory limiter and budget guard are per-instance only (acceptable for a demo); the three Gemma routes set `maxDuration = 300` (the Hobby maximum), because real calls take up to about 4 minutes. If M7 is deployed, set the Supabase variables in the host's environment settings and add the deployed `/auth/callback` URL in the Supabase dashboard (§19.10).
 
 ---
 
