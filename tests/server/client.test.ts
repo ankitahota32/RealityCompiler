@@ -131,6 +131,16 @@ describe('real Gemma client (fake SDK)', () => {
     expect(second.parts.at(-1)?.text).toBe('USER\n\nYou must answer by calling submit_x. Do not answer in text.');
   });
 
+  it('reserves budget before the §7.5 retry and does not send it when there is no room', async () => {
+    const { ai, requests } = fakeAi([
+      response([{ text: 'no call' }], { promptTokenCount: 5, candidatesTokenCount: 5, totalTokenCount: 900 }),
+      response([callPart({ ok: 1 })]),
+    ]);
+    const tight = createRealClient(ai, new TokenBudget({ safety: 1000, retryWaitMs: 0 }), { sleep: noSleep });
+    await expect(tight.call(options())).rejects.toMatchObject({ code: 'RATE_LIMITED' });
+    expect(requests).toHaveLength(1);
+  });
+
   it('gives MODEL_OUTPUT_INVALID when neither a call nor JSON comes back', async () => {
     const { ai } = fakeAi([response([{ text: 'no' }]), response([{ text: 'still no' }])]);
     await expect(client(ai).call(options())).rejects.toMatchObject({ code: 'MODEL_OUTPUT_INVALID' });

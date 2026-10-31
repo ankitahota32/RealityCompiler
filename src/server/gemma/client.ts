@@ -112,7 +112,7 @@ export function createRealClient(ai: GenAiLike, budget: TokenBudget, options: Re
     async call(o) {
       const images = o.images ?? [];
       const estimate = estimateTokens(o.systemInstruction, o.userText, images.length, o.maxOutputTokens);
-      return budget.run(estimate, async () => {
+      return budget.run(estimate, async (run) => {
         const uploaded: string[] = [];
         try {
           // 1. Upload images through a random temp file each (SPEC §7.1 step 2).
@@ -166,6 +166,7 @@ export function createRealClient(ai: GenAiLike, budget: TokenBudget, options: Re
               callUsage = { promptTokens: estimate - o.maxOutputTokens, outputTokens: 0, totalTokens: estimate };
             }
             usage = addUsage(usage, callUsage);
+            run.record(callUsage.totalTokens);
             console.info(JSON.stringify({ step: o.step, model: o.model, ...callUsage, ms: Date.now() - start }));
             return response;
           };
@@ -174,11 +175,14 @@ export function createRealClient(ai: GenAiLike, budget: TokenBudget, options: Re
           let args: unknown = first.functionCalls?.find((c) => c.name === name)?.args;
           if (args === undefined) {
             // §7.5: one more attempt with an explicit instruction, then text JSON.
-            const second = await once(`${o.userText}\n\nYou must answer by calling ${name}. Do not answer in text.`);
+            // The retry is a second Gemini request, so it needs its own room in the budget.
+            const retryText = `${o.userText}\n\nYou must answer by calling ${name}. Do not answer in text.`;
+            await run.reserveMore(estimateTokens(o.systemInstruction, retryText, images.length, o.maxOutputTokens));
+            const second = await once(retryText);
             args = second.functionCalls?.find((c) => c.name === name)?.args ?? parseTextJson(second.text) ?? parseTextJson(first.text);
           }
           if (args === undefined) throw new AppError('MODEL_OUTPUT_INVALID', 'The model did not return a usable answer.');
-          return { value: { args, usage }, totalTokens: usage.totalTokens };
+          return { value: { args, usage } };
         } finally {
           // Best effort (SPEC §7.1 step 7).
           await Promise.allSettled(uploaded.map((n) => ai.files.delete({ name: n })));
