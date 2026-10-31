@@ -75,6 +75,37 @@ describe('TokenBudget', () => {
     await assertion;
   });
 
+  it('counts an attempt when it finishes and makes the retry wait for room (§7.5)', async () => {
+    const b = new TokenBudget({ safety: 14000 });
+    let retrySent = false;
+    const p = b.run(9000, async (run) => {
+      await new Promise((r) => setTimeout(r, 120_000)); // a slow first attempt, like analyze
+      run.record(7000);
+      await run.reserveMore(9000);
+      retrySent = true;
+      run.record(8000);
+      return { value: 'ok' };
+    });
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(retrySent).toBe(false); // 7000 + 9000 would pass 14000 in the minute after the first attempt
+    await vi.advanceTimersByTimeAsync(60_500);
+    await expect(p).resolves.toBe('ok');
+    expect(retrySent).toBe(true);
+    expect(b.used()).toBe(8000);
+  });
+
+  it('gives RATE_LIMITED instead of sending a retry that cannot fit in time', async () => {
+    const b = new TokenBudget({ safety: 14000, retryWaitMs: 10_000 });
+    const p = b.run(9000, async (run) => {
+      run.record(7000);
+      await run.reserveMore(9000);
+      return { value: 'sent' };
+    });
+    const assertion = expect(p).rejects.toMatchObject({ code: 'RATE_LIMITED', retryAfterSec: 50 });
+    await vi.advanceTimersByTimeAsync(10_500);
+    await assertion;
+  });
+
   it('lets a single call above the ceiling run when the window is empty', async () => {
     const b = new TokenBudget({ safety: 1000 });
     await expect(b.run(5000, done())).resolves.toBe('ok');

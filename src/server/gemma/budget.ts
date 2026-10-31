@@ -10,11 +10,23 @@ export interface BudgetOptions {
   maxRequestsPerMinute?: number;
   pollMs?: number;
   maxWaitMs?: number;
+  /** How long the one §7.5 retry may wait for room (default 65 s, just over the 60 s window). */
+  retryWaitMs?: number;
   now?: () => number;
   sleep?: (ms: number) => Promise<void>;
 }
 
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+/** Given to a call so it can count each attempt and reserve room before its one retry (SPEC §7.5). */
+export interface BudgetRun {
+  /** Real tokens of the attempt that just finished. They count from now, when Gemini has charged them. */
+  record(tokens: number): void;
+  /** Waits for room for one more attempt, or throws RATE_LIMITED instead of sending it over the limit. */
+  reserveMore(estimate: number): Promise<void>;
+}
+
+type Entry = { time: number; tokens: number };
 
 /** §12.1 estimate: characters / 3.5, plus 1120 per image, plus the output cap. */
 export function estimateTokens(systemInstruction: string, userText: string, imageCount: number, maxOutputTokens: number): number {
@@ -22,12 +34,13 @@ export function estimateTokens(systemInstruction: string, userText: string, imag
 }
 
 export class TokenBudget {
-  private entries: { time: number; tokens: number }[] = [];
+  private entries: Entry[] = [];                 // was: { time: number; tokens: number }[]
   private tail: Promise<void> = Promise.resolve();
   private readonly safety: number;
   private readonly maxRequests: number;
   private readonly pollMs: number;
   private readonly maxWaitMs: number;
+  private readonly retryWaitMs: number;          // new
   private readonly now: () => number;
   private readonly sleep: (ms: number) => Promise<void>;
 
@@ -36,6 +49,7 @@ export class TokenBudget {
     this.maxRequests = o.maxRequestsPerMinute ?? 25;
     this.pollMs = o.pollMs ?? 500;
     this.maxWaitMs = o.maxWaitMs ?? 25_000;
+    this.retryWaitMs = o.retryWaitMs ?? 65_000;  // new
     this.now = o.now ?? Date.now;
     this.sleep = o.sleep ?? defaultSleep;
   }
@@ -47,10 +61,11 @@ export class TokenBudget {
   }
 
   /**
-   * Runs `fn` as the only call in flight, after reserving `estimate`. `fn` returns the real token count,
-   * which replaces the estimate. Throws RATE_LIMITED if the budget does not free up within 25 s.
+   * Runs `fn` as the only call in flight, after reserving `estimate`. `fn` either reports each attempt
+   * through `run.record` (and reserves before a retry with `run.reserveMore`), or returns the real
+   * total, which replaces the estimate. Throws RATE_LIMITED if the budget does not free up in time.
    */
-  async run<T>(estimate: number, fn: () => Promise<{ value: T; totalTokens?: number }>): Promise<T> {
+  async run<T>(estimate: number, fn: (run: BudgetRun) => Promise<{ value: T; totalTokens?: number }>): Promise<T> {
     const previous = this.tail;
     let release = () => {};
     this.tail = new Promise<void>((r) => {
@@ -58,18 +73,35 @@ export class TokenBudget {
     });
     await previous;
     try {
-      let entry: { time: number; tokens: number } | undefined;
-      try {
-        entry = await this.reserve(estimate);
-      } catch (e) {
-        if (e instanceof AppError) throw e;
-        console.warn('[budget] guard failed; continuing without it');
-      }
-      const { value, totalTokens } = await fn();
-      if (entry !== undefined && totalTokens !== undefined) entry.tokens = totalTokens;
+      let entry = await this.guarded(estimate, this.maxWaitMs);
+      let recorded = false;
+      const run: BudgetRun = {
+        record: (tokens) => {
+          recorded = true;
+          if (entry === undefined) return;
+          entry.tokens = tokens;
+          entry.time = this.now();
+        },
+        reserveMore: async (more) => {
+          entry = await this.guarded(more, this.retryWaitMs);
+        },
+      };
+      const { value, totalTokens } = await fn(run);
+      if (!recorded && entry !== undefined && totalTokens !== undefined) entry.tokens = totalTokens;
       return value;
     } finally {
       release();
+    }
+  }
+
+  /** reserve(), except that a bug in the guard itself never blocks the call (SPEC §12.1). */
+  private async guarded(estimate: number, maxWaitMs: number): Promise<Entry | undefined> {
+    try {
+      return await this.reserve(estimate, maxWaitMs);
+    } catch (e) {
+      if (e instanceof AppError) throw e;
+      console.warn('[budget] guard failed; continuing without it');
+      return undefined;
     }
   }
 
@@ -101,10 +133,10 @@ export class TokenBudget {
     return 5;
   }
 
-  private async reserve(estimate: number): Promise<{ time: number; tokens: number }> {
+  private async reserve(estimate: number, maxWaitMs: number): Promise<Entry> {
     const start = this.now();
     while (!this.fits(estimate)) {
-      if (this.now() - start >= this.maxWaitMs) {
+      if (this.now() - start >= maxWaitMs) {
         throw new AppError('RATE_LIMITED', 'The token budget is used up for now.', this.secondsUntilFree(estimate));
       }
       await this.sleep(this.pollMs);
